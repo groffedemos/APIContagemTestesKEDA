@@ -34,20 +34,28 @@ namespace APIContagem
 
                 bus.AddRider(rider =>
                 {
-                    rider.AddProducer<IResultadoContador>("topic-testes");
+                    rider.AddProducer<IResultadoContador>(
+                        Configuration["ApacheKafka:Topic"]);
 
-                    rider.UsingKafka(
-                        new ()
-                        {
-                            SecurityProtocol = Confluent.Kafka.SecurityProtocol.SaslSsl,
-                            SaslMechanism = Confluent.Kafka.SaslMechanism.Plain,
-                            SaslUsername = Configuration["ApacheKafka:Username"],
-                            SaslPassword = Configuration["ApacheKafka:Password"]
-                        },
-                        (_, kafka) =>
-                        {
-                            kafka.Host(Configuration["ApacheKafka:Host"]);
-                        });
+                    if (string.IsNullOrWhiteSpace(Configuration["ApacheKafka:Password"]))
+                        rider.UsingKafka(
+                            (_, kafka) =>
+                            {
+                                kafka.Host(Configuration["ApacheKafka:Host"]);
+                            });
+                    else
+                        rider.UsingKafka(
+                            new ()
+                            {
+                                SecurityProtocol = Confluent.Kafka.SecurityProtocol.SaslSsl,
+                                SaslMechanism = Confluent.Kafka.SaslMechanism.Plain,
+                                SaslUsername = Configuration["ApacheKafka:Username"],
+                                SaslPassword = Configuration["ApacheKafka:Password"]
+                            },
+                            (_, kafka) =>
+                            {
+                                kafka.Host(Configuration["ApacheKafka:Host"]);
+                            });
                 });
             });
 
