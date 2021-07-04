@@ -35,7 +35,11 @@ namespace APIContagem
                 bus.AddRider(rider =>
                 {
                     rider.AddProducer<IResultadoContador>(
-                        Configuration["ApacheKafka:Topic"]);
+                        Configuration["ApacheKafka:Topic"],
+                        (_, kafka) =>
+                        {
+                            kafka.Partitioner = Confluent.Kafka.Partitioner.Murmur2Random;
+                        });
 
                     if (string.IsNullOrWhiteSpace(Configuration["ApacheKafka:Password"]))
                         rider.UsingKafka(
